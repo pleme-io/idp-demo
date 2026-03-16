@@ -1,15 +1,21 @@
 {
   description = "IDP demo manifests and application for Internal Developer Platform with ArgoCD and Crossplane";
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
+    substrate = {
+      url = "github:pleme-io/substrate";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     flake-utils.url = "github:numtide/flake-utils";
   };
-  outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system: let
-      pkgs = import nixpkgs { inherit system; };
-    in {
-      devShells.default = pkgs.mkShellNoCC {
-        packages = with pkgs; [ kubectl kustomize shellcheck bash ];
-      };
-    });
+
+  outputs = inputs:
+    (import "${inputs.substrate}/lib/repo-flake.nix" {
+      inherit (inputs) nixpkgs flake-utils;
+    }) {
+      self = inputs.self;
+      language = "shell";
+      description = "IDP demo manifests and application for Internal Developer Platform with ArgoCD and Crossplane";
+    };
 }
